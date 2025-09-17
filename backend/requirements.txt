@@ -1,0 +1,19 @@
+# UFDR Investigator Backend Dependencies - Phase 2: Storage & Indexing
+# Python 3.11+
+
+# Core database dependencies
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# OpenSearch for full-text search
+opensearch-py>=2.0.0
+
+# Optional: Progress bars and enhanced CLI
+tqdm>=4.65.0
+
+# Development and testing (optional)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# For SQLite development fallback (included in standard library but listing for clarity)
+# sqlite3 - included in Python standard library
