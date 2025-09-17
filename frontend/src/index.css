@@ -1,0 +1,241 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for ForensiQ */
+@layer base {
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono',
+      'Courier New', monospace;
+  }
+}
+
+@layer components {
+  /* Loading spinner animation */
+  .animate-spin-slow {
+    animation: spin 2s linear infinite;
+  }
+
+  /* Entity highlighting styles */
+  .entity-highlight {
+    @apply px-1 py-0.5 rounded text-xs font-medium;
+  }
+  
+  .entity-person {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .entity-org {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .entity-location {
+    @apply bg-purple-100 text-purple-800;
+  }
+  
+  .entity-phone {
+    @apply bg-orange-100 text-orange-800;
+  }
+  
+  .entity-email {
+    @apply bg-cyan-100 text-cyan-800;
+  }
+  
+  .entity-datetime {
+    @apply bg-pink-100 text-pink-800;
+  }
+  
+  .entity-url {
+    @apply bg-indigo-100 text-indigo-800;
+  }
+
+  /* Search query highlighting */
+  .search-highlight {
+    @apply bg-yellow-200 font-semibold;
+  }
+
+  /* Graph visualization styles */
+  .vis-network {
+    outline: none;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Message bubbles for conversation view */
+  .message-bubble {
+    @apply max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative;
+  }
+
+  .message-bubble.sent {
+    @apply bg-blue-500 text-white ml-auto;
+  }
+
+  .message-bubble.received {
+    @apply bg-gray-200 text-gray-900;
+  }
+
+  .message-bubble::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+  }
+
+  .message-bubble.sent::before {
+    right: -16px;
+    border-left-color: #3b82f6;
+  }
+
+  .message-bubble.received::before {
+    left: -16px;
+    border-right-color: #e5e7eb;
+  }
+}
+
+@layer utilities {
+  /* Custom utilities for ForensiQ */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Truncate with tooltip */
+  .truncate-tooltip {
+    @apply truncate cursor-help;
+  }
+
+  /* Focus ring for accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+
+  /* Transition utilities */
+  .transition-all-fast {
+    transition: all 0.15s ease-in-out;
+  }
+
+  .transition-colors-fast {
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  }
+}
+
+/* Print styles for PDF export */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break {
+    page-break-before: always;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Ensure good contrast for printed entity highlights */
+  .entity-highlight {
+    border: 1px solid currentColor;
+  }
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+  /* Dark mode styles would go here */
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  .responsive-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+/* Graph network container fixes */
+.vis-network canvas {
+  outline: none;
+}
+
+.vis-network-tooltip {
+  @apply bg-gray-900 text-white px-2 py-1 rounded text-xs;
+}
+
+/* Custom button variants */
+.btn-primary {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors;
+}
+
+.btn-outline {
+  @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors;
+}
+
+/* Loading states */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Status indicators */
+.status-online {
+  @apply bg-green-400;
+}
+
+.status-offline {
+  @apply bg-gray-400;
+}
+
+.status-error {
+  @apply bg-red-400;
+}
