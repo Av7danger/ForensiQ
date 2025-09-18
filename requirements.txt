@@ -1,28 +1,52 @@
-# Core backend
-sqlalchemy>=1.4
-psycopg2-binary>=2.9
-opensearch-py>=2.1.0
-python-dotenv>=0.21.0
+# Core backend framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+python-multipart>=0.0.6
 
-# Phase 3: NLP and entity extraction
-phonenumbers>=8.13.0
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+alembic>=1.13.0
 
-# Phase 4: Retrieval and API
+# Search and indexing  
+opensearch-py>=2.4.0
+redis>=5.0.0
+
+# AI/ML and NLP
 sentence-transformers>=2.2.0
-faiss-cpu>=1.7.0
-transformers>=4.21.0
-torch>=1.12.0
-fastapi>=0.100.0
-pydantic>=2.0.0
-uvicorn>=0.23.0
+transformers>=4.35.0
+torch>=2.1.0
+faiss-cpu>=1.7.4
+spacy>=3.7.0
 
-# Optional: Progress bars and CLI
-tqdm>=4.64.0
+# Entity extraction
+phonenumbers>=8.13.0
+email-validator>=2.1.0
+validators>=0.22.0
 
-# Optional: GPU acceleration (replace faiss-cpu with faiss-gpu)
-# faiss-gpu>=1.7.0
+# File processing
+zipfile-deflate64>=0.2.0
+python-magic>=0.4.27
 
-# Development and testing (optional)
-pytest>=7.0.0
-black>=22.0.0
-isort>=5.10.0
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+pandas>=2.1.0
+numpy>=1.24.0
+
+# Security
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+
+# Development tools
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+isort>=5.12.0
+flake8>=6.0.0
+mypy>=1.7.0
+
+# Monitoring and logging
+structlog>=23.2.0
+rich>=13.7.0
