@@ -70,102 +70,182 @@ It empowers investigators with **hybrid search, entity extraction, and AI-powere
 
 ---
 
-## 🛠️ Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 16+ (for frontend)
-- PostgreSQL (optional, SQLite fallback works)
-- OpenSearch (for keyword search)
-- FAISS (CPU or GPU)
+- **Python 3.11+**
+- **Node.js 18+** (for frontend)
+- **Docker** (optional, for databases)
+- **Git**
 
-### Quick Setup
+### Installation
 
 ```bash
-# Clone repo
+# Clone repository
 git clone https://github.com/Av7danger/ForensiQ.git
 cd ForensiQ
 
-# Backend setup
+# Set up Python environment
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python -c "from backend.db import init_db; init_db()"
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Frontend setup
-cd frontend
-npm install
-npm run dev
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Core Dependencies
+### Setup Database
 
 ```bash
-# Database & ETL
-pip install sqlalchemy psycopg2-binary opensearch-py python-dotenv
+# Option 1: Docker (Recommended)
+docker-compose up -d
 
-# NLP & embeddings
-pip install sentence-transformers faiss-cpu phonenumbers transformers
+# Option 2: Local PostgreSQL
+createdb forensiq_db
+psql forensiq_db < schema.sql
+```
 
-# API
-pip install fastapi uvicorn pydantic
+### Run Backend
 
-# Optional (GPU acceleration)
-pip install faiss-gpu torch
+```bash
+cd backend
+uvicorn main:app --reload --port 8000
+```
+
+### Run Frontend
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Process UFDR File
+
+```bash
+# Upload and process UFDR
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@sample_data.ufdr" \
+  -F "case_id=CASE-2024-001"
 ```
 
 ---
 
-## 📖 Usage
+## 📖 Usage Guide
 
-### 1️⃣ Parse UFDR Files
-
+### 1. **Upload UFDR Archive**
 ```bash
-python parsers/ufdr_parser.py --input case.ufdr --output ./output/CASE-001/
+POST /upload
+Content-Type: multipart/form-data
+
+{
+  "file": "evidence.ufdr",
+  "case_id": "CASE-2024-001",
+  "investigator": "Detective Smith"
+}
 ```
 
-### 2️⃣ Load Data into DB
-
+### 2. **Search Messages**
 ```bash
-python backend/etl_load.py --input ./output/CASE-001/parsed/ --case CASE-001
+GET /search?q=suspicious+activity&case_id=CASE-2024-001&limit=50
 ```
 
-### 3️⃣ Build Search Indexes
-
+### 3. **Entity Extraction**
 ```bash
-# Keyword search (OpenSearch)
-python backend/opensearch_index.py --input ./output/CASE-001/parsed/messages.jsonl --index messages
-
-# Semantic search (FAISS)
-python nlp/embeddings_worker.py --input ./output/CASE-001/parsed/messages.jsonl --out ./vectors/
+GET /entities?case_id=CASE-2024-001&entity_type=phone_number
 ```
 
-### 4️⃣ Start Services
-
+### 4. **Semantic Search**
 ```bash
-# Backend API
-uvicorn backend.app.query:app --reload --host 0.0.0.0 --port 8000
-
-# Frontend (new terminal)
-cd frontend && npm run dev
+POST /semantic_search
+{
+  "query": "drug transaction keywords",
+  "case_id": "CASE-2024-001",
+  "top_k": 20
+}
 ```
 
-### 5️⃣ Access Interface
-
-- **Web Dashboard**: http://localhost:5173
-- **API Documentation**: http://localhost:8000/docs
-
-### 6️⃣ Run a Query
-
+### 5. **Export Report**
 ```bash
-curl -X POST http://localhost:8000/api/search \
-  -H "Content-Type: application/json" \
-  -d '{
-    "q": "suspicious cryptocurrency transactions",
-    "limit": 5,
-    "page": 1
-  }'
+GET /export?case_id=CASE-2024-001&format=pdf
+```
+
+---
+
+## 🔧 API Reference
+
+### Core Endpoints
+
+#### Upload UFDR File
+```http
+POST /upload
+```
+**Request:**
+```json
+{
+  "file": "<binary>",
+  "case_id": "string",
+  "investigator": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "case_id": "CASE-2024-001",
+  "messages_processed": 15420,
+  "contacts_extracted": 342,
+  "processing_time": "45.2s"
+}
+```
+
+#### Search Evidence
+```http
+GET /search?q={query}&case_id={case_id}&limit={limit}
+```
+
+**Response:**
+```json
+{
+  "results": [
+    {
+      "id": "msg_12345",
+      "content": "Message text with highlighted terms",
+      "timestamp": "2024-01-15T14:30:00Z",
+      "sender": "+1234567890",
+      "receiver": "+0987654321",
+      "relevance_score": 0.95,
+      "entities": {
+        "phone_numbers": ["+1234567890"],
+        "emails": ["suspect@example.com"]
+      }
+    }
+  ],
+  "total": 127,
+  "query_time": "0.45s"
+}
+```
+
+#### Entity Extraction
+```http
+GET /entities?case_id={case_id}&entity_type={type}
+```
+
+**Response:**
+```json
+{
+  "entities": [
+    {
+      "type": "phone_number",
+      "value": "+1234567890",
+      "normalized": "+1234567890",
+      "frequency": 45,
+      "first_seen": "2024-01-10T09:15:00Z",
+      "last_seen": "2024-01-20T16:45:00Z"
+    }
+  ]
+}
 ```
 
 ---
@@ -173,228 +253,116 @@ curl -X POST http://localhost:8000/api/search \
 ## 🏗️ Architecture
 
 ```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Frontend │    │  FastAPI Backend │    │   PostgreSQL    │
+│   (TypeScript)   │◄──►│    (Python)     │◄──►│   Database      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │
+                       ┌────────┴────────┐
+                       │                 │
+                ┌─────────────┐   ┌─────────────┐
+                │ OpenSearch  │   │    FAISS    │
+                │ (Full-text) │   │ (Semantic)  │
+                └─────────────┘   └─────────────┘
+```
+
+### Key Components
+
+- **UFDR Parser**: Extracts data from Cellebrite archives
+- **Hybrid Search**: Combines keyword + semantic search
+- **Entity Extractor**: Detects phones, emails, URLs, crypto
+- **AI Summarizer**: Generates case summaries
+- **Export Engine**: PDF/HTML report generation
+
+---
+
+## 🛠️ Development
+
+### Project Structure
+```
 ForensiQ/
-├── parsers/        # Phase 1: UFDR parsing
-├── backend/        # Phase 2: DB, indexing, API
-├── nlp/            # Phase 3: Entity extraction & embeddings
-├── frontend/       # Phase 5: React dashboard
-├── vectors/        # FAISS index
-└── output/         # Parsed case data
+├── backend/
+│   ├── main.py              # FastAPI application
+│   ├── models/              # SQLAlchemy models
+│   ├── services/            # Business logic
+│   ├── parsers/             # UFDR parsing
+│   └── utils/               # Utilities
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   ├── pages/           # Page components
+│   │   └── services/        # API clients
+│   └── public/
+├── tests/
+├── docs/
+└── docker-compose.yml
 ```
 
-**Data Flow:**
-
-1. **UFDR → Parser → JSONL**
-2. **JSONL → ETL → PostgreSQL**
-3. **Messages → OpenSearch (keywords)**
-4. **Messages → NLP → FAISS (embeddings)**
-5. **Query → Hybrid Retrieval → Web Interface → Results**
-
----
-
-## 🔍 Search Modes
-
-### Keyword Search (OpenSearch)
-
-* Exact / fuzzy search
-* Field-specific (sender, recipient, body)
-* Boolean queries
-
-### Semantic Search (FAISS)
-
-* Conceptual similarity
-* Context-aware results
-* Cross-lingual support
-
-### Hybrid Fusion
-
-* Weighted score combination
-* Deduplication & boosting
-* Optimized ranking
-
----
-
-## 🤖 AI Features
-
-* **Entity Extraction**: Phones, emails, URLs, crypto
-* **Phone Normalization**: International (E.164)
-* **Summarization**: Local HuggingFace models
-* **Privacy First**: No external API calls
-
----
-
-## 📊 API Reference
-
-### POST `/api/search`
-
-Hybrid search with pagination.
-
-**Request**
-
-```json
-{
-  "q": "search query",
-  "limit": 10,
-  "page": 1,
-  "type": "messages"
-}
-```
-
-**Response**
-
-```json
-{
-  "results": [
-    {
-      "id": "msg_123",
-      "type": "message",
-      "content": "Message text...",
-      "score": 0.92,
-      "entities": {
-        "phones": ["+15551234567"],
-        "emails": ["user@example.com"]
-      },
-      "timestamp": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "total": 42,
-  "page": 1,
-  "per_page": 10
-}
-```
-
-### GET `/api/evidence/{id}`
-
-Get detailed evidence information.
-
-### GET `/api/graph`
-
-Get network graph data for visualization.
-
-### GET `/health`
-
-Simple health check.
-
----
-
-## ⚙️ Configuration
-
-Set environment variables in `.env`:
-
-```bash
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/ufdr
-
-# Search
-OPENSEARCH_URL=http://localhost:9200
-FAISS_INDEX_DIR=./vectors
-
-# Models
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-
-# API
-API_HOST=0.0.0.0
-API_PORT=8000
-```
-
-Frontend configuration in `frontend/.env.local`:
-
-```bash
-VITE_API_BASE_URL=http://localhost:8000
-VITE_APP_TITLE=ForensiQ Investigator Dashboard
-```
-
----
-
-## 🚧 Roadmap
-
-* [x] ~~UFDR parsing & data extraction~~
-* [x] ~~Hybrid search (keyword + semantic)~~
-* [x] ~~Entity extraction & phone normalization~~
-* [x] ~~REST API with FastAPI~~
-* [x] ~~React investigator dashboard~~
-* [x] ~~Network graph visualization~~
-* [ ] File upload interface
-* [ ] Timeline analysis view
-* [ ] Advanced case management
-* [ ] Multi-case correlation
-* [ ] Docker & K8s deployment
-
----
-
-## 🔒 Security & Privacy
-
-* 100% **offline-capable**
-* **No external APIs**
-* Local processing of sensitive forensic data
-* Audit logs for legal compliance
-* Secure file handling with integrity checks
-
----
-
-## 🧪 Testing
-
-Run the test suite:
-
+### Running Tests
 ```bash
 # Backend tests
-python -m pytest tests/
-
-# Entity extraction test
-python -c "
-from nlp.extractors import extract_entities
-result = extract_entities('Call +1-555-123-4567')
-assert result['phones']
-print('✅ Entity extraction: PASS')
-"
-
-# Phone normalization test  
-python -c "
-from nlp.normalize_phone import normalize_phone
-assert normalize_phone('(555) 123-4567') == '+15551234567'
-print('✅ Phone normalization: PASS')
-"
+cd backend
+pytest tests/ -v
 
 # Frontend tests
-cd frontend && npm test
+cd frontend
+npm test
+```
+
+### Building for Production
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Build Docker image
+docker build -t forensiq:latest .
 ```
 
 ---
 
-## 📝 License
+## 📋 Legal & Compliance
 
-MIT License — see [LICENSE](LICENSE)
+### Evidence Handling
+- **Chain of Custody**: All operations logged with timestamps
+- **Data Integrity**: SHA-256 checksums for all evidence
+- **Audit Trail**: Complete processing history
+- **Privacy**: No data leaves local environment
+
+### Supported Formats
+- ✅ Cellebrite UFDR (primary)
+- ✅ Raw message exports (CSV, JSON)
+- ✅ Contact lists (vCard, CSV)
+- ⏳ Additional formats (roadmap)
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork repo
-2. Create feature branch (`git checkout -b feature/my-feature`)
-3. Commit changes (`git commit -m 'Add feature'`)
-4. Push (`git push origin feature/my-feature`)
-5. Open PR
+1. **Fork** the repository
+2. **Create** feature branch (`git checkout -b feature/AmazingFeature`)
+3. **Commit** changes (`git commit -m 'Add AmazingFeature'`)
+4. **Push** to branch (`git push origin feature/AmazingFeature`)
+5. **Open** Pull Request
 
 ---
 
-## 📚 Documentation
+## 📜 License
 
-* [Setup Instructions](SETUP.md) - Complete installation guide
-* [Parser Docs](parsers/README.md) - UFDR parsing details
-* [Backend API Guide](backend/README.md) - API documentation
-* [Frontend Guide](frontend/README.md) - Web interface setup
-* [NLP Module](nlp/README.md) - Entity extraction & embeddings
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
-## 🏆 Acknowledgments
+## 🙏 Acknowledgments
 
-* **Cellebrite** for UFDR specs
-* **HuggingFace** for NLP models
-* **OpenSearch** community
-* **FAISS** team
-* **React** & **TypeScript** communities
+- **Cellebrite** for UFDR format specifications
+- **OpenSearch** for full-text search capabilities
+- **HuggingFace** for AI/NLP models
+- **React** + **TypeScript** for frontend framework
 
 ---
 
-🚀 **ForensiQ** — Empowering forensic investigators with **offline, AI-powered evidence analysis**.
+<p align="center">
+  <b>🔍 ForensiQ — Empowering Digital Forensics with AI</b><br>
+  <i>Built with ❤️ for law enforcement and cybersecurity professionals</i>
+</p>
