@@ -1,28 +1,17 @@
-# Core backend
-sqlalchemy>=1.4
-psycopg2-binary>=2.9
-opensearch-py>=2.1.0
-python-dotenv>=0.21.0
-
-# Phase 3: NLP and entity extraction
-phonenumbers>=8.13.0
-
-# Phase 4: Retrieval and API
-sentence-transformers>=2.2.0
-faiss-cpu>=1.7.0
-transformers>=4.21.0
-torch>=1.12.0
+# Core Dependencies
 fastapi>=0.100.0
-pydantic>=2.0.0
 uvicorn>=0.23.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
 
-# Optional: Progress bars and CLI
-tqdm>=4.64.0
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
 
-# Optional: GPU acceleration (replace faiss-cpu with faiss-gpu)
-# faiss-gpu>=1.7.0
+# Search
+opensearch-py>=2.1.0
 
-# Development and testing (optional)
+# Development (optional)
 pytest>=7.0.0
-black>=22.0.0
-isort>=5.10.0
+black>=23.0.0
+isort>=5.12.0

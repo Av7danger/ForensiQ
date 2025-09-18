@@ -1,0 +1,36 @@
+# Production Dependencies
+-r base.txt
+
+gunicorn>=20.1.0,<21.0.0
+uvicorn[standard]>=0.21.0,<1.0.0
+
+# Monitoring and Logging
+sentry-sdk[fastapi]>=1.15.0,<2.0.0
+python-json-logger>=2.0.6,<3.0.0
+structlog>=22.3.0,<24.0.0
+
+# Performance
+uvloop>=0.17.0,<1.0.0; platform_system != 'Windows'
+httptools>=0.5.0,<1.0.0
+
+# Security
+python-jose[cryptography]>=3.3.0,<4.0.0
+passlib[bcrypt]>=1.7.4,<2.0.0
+python-multipart>=0.0.6,<1.0.0
+
+# Database Connection Pooling
+sqlalchemy[asyncio]>=2.0.0,<3.0.0
+alembic>=1.10.0,<2.0.0
+psycopg2-binary>=2.9.5,<3.0.0
+
+# Caching
+redis>=4.5.0,<5.0.0
+
+# Rate Limiting
+slowapi>=0.1.7,<1.0.0
+
+# Background Tasks
+celery[redis]>=5.2.7,<6.0.0
+
+# Email
+email-validator>=2.0.0,<3.0.0

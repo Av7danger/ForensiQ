@@ -24,7 +24,7 @@ except ImportError:
     AutoTokenizer = None
     AutoModelForSeq2SeqLM = None
 
-from ..retriever import get_retriever
+from retriever import get_retriever
 
 logger = logging.getLogger(__name__)
 
